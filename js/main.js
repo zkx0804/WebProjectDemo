@@ -24,6 +24,9 @@ var sdpConstraints = {
 
 // var room = 'test';
 var room = prompt('Enter room name:');
+var room_name = document.querySelector('#room_name');
+room_name.innerHTML = room;
+
 
 var socket = io.connect();
 
@@ -229,7 +232,8 @@ function requestTurn(turnURL) {
 
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
-  remoteStream = event.stream[0];
+  console.log(event)
+  remoteStream = event.streams[0];
   // remoteVideo.srcObject = remoteStream;
   if (!remoteVideo.srcObject || remoteVideo.srcObject.id !== remoteStream.id) {
     remoteVideo.srcObject = remoteStream;
