@@ -8,10 +8,27 @@ var pc;
 var remoteStream;
 var turnReady;
 
-var pcConfig = {
-  'iceServers': [{
+
+var default_server = {
     'urls': 'stun:stun.l.google.com:19302'
-  }]
+}
+
+
+var turn1 = {
+    url: 'turn:numb.viagenie.ca',
+    credential: 'muazkh',
+    username: 'webrtc@live.com'
+}
+
+var turn2 = {
+    url: 'turn:192.158.29.39:3478?transport=udp',
+    credential: 'JZEOEt2V3Qb0y27GRntt2u2PAYA=',
+    username: '28224511:1379330808'
+}
+
+
+var pcConfig = {
+    'iceServers': [turn1]
 };
 
 // Set up audio and video regardless of what devices are present.
@@ -122,7 +139,8 @@ console.log('Getting user media with constraints', constraints);
 
 if (location.hostname !== 'localhost') {
   requestTurn(
-    'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
+    // 'https://computeengineondemand.appspot.com/turn?username=41784574&key=4080218913'
+      "turn:numb.viagenie.ca"
   );
 }
 
