@@ -1,5 +1,9 @@
 'use strict';
 
+// 1. Understand code better
+// 2. Modified stream
+// 3. Dynamically crarete video elements based streams.
+
 var isChannelReady = false;
 var isInitiator = false;
 var isStarted = false;

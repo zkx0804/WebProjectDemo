@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Realtime communication with WebRTC</title>
+  <link rel="stylesheet" href="css/main.css" />
+</head>
+
+<body>
+  <h1>Realtime communication with WebRTC</h1>
+  <div>
+      <p>Local feed:</p>
+      <video id="localVideo" autoplay playsinline></video>
+      <canvas id="localCanvas"></canvas>
+      <canvas id="photo"></canvas>
+  </div>
+  <div>
+      <button id="startButton">Start</button>
+      <button id="pauseStream">Pause local stream</button>
+      <button id="changeStream">Modify local stream</button>
+      <button id="capture">Capture</button>
+  </div>
+  <div>
+      <p>Remote feed:</p>
+      <button id="callButton">Call</button>
+      <button id="addStream">Add Stream</button>
+      <button id="hangupButton">Hang Up</button>
+  </div>
+  <div id="remoteGroup">
+      <video id="remoteVideo" autoplay playsinline></video>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
+  <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
+  <script src="js/main.js"></script>
+</body>
+</html>
