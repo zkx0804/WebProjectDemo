@@ -48,6 +48,11 @@ var room = prompt('Enter room name:');
 var room_name = document.querySelector('#room_name');
 room_name.innerHTML = room;
 
+// User role
+var user_role = prompt("Join as host or user?");
+var user_display_role = document.querySelector('user_role');
+user_display_role.innerHTML = user_role;
+
 
 var socket = io.connect();
 
