@@ -1,5 +1,8 @@
 'use strict';
 
+var max_clients = 3;
+
+
 var os = require('os');
 var nodeStatic = require('node-static');
 var http = require('http');
@@ -27,25 +30,28 @@ io.sockets.on('connection', function(socket) {
   });
 
   socket.on('create or join', function(room) {
-    log('Received request to create or join room ' + room);
+    console.log('Received request to create or join room ' + room);
 
     var clientsInRoom = io.sockets.adapter.rooms[room];
     var numClients = clientsInRoom ? Object.keys(clientsInRoom.sockets).length : 0;
-    log('Room ' + room + ' now has ' + numClients + ' client(s)');
 
     if (numClients === 0) {
       socket.join(room);
-      log('Client ID ' + socket.id + ' created room ' + room);
+      console.log('Client ID ' + socket.id + ' created room ' + room);
+
       socket.emit('created', room, socket.id);
 
-    } else if (numClients === 1) {
-      log('Client ID ' + socket.id + ' joined room ' + room);
+    } else if (numClients < max_clients) {
+      console.log('Client ID ' + socket.id + ' joined room ' + room);
       io.sockets.in(room).emit('join', room);
       socket.join(room);
       socket.emit('joined', room, socket.id);
       io.sockets.in(room).emit('ready');
-    } else { // max two clients
+      console.log('Room ' + room + ' now has ' + numClients + ' client(s)');
+
+    } else if (numClients === max_clients) {
       socket.emit('full', room);
+      console.log("Room is full!")
     }
   });
 

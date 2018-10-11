@@ -11,6 +11,7 @@ var localStream;
 var pc;
 var remoteStream;
 var turnReady;
+var peerConnections = [];
 
 
 var default_server = {
@@ -43,15 +44,54 @@ var sdpConstraints = {
 
 /////////////////////////////////////////////
 
+// Selectors
+// var localVideo = document.querySelector('#localVideo');
+// var remoteVideo = document.querySelector('#remoteVideo');
+
+function create_video_obj(video_id){
+    var video_obj = document.createElement('video');
+    video_obj.id = video_id;
+    video_obj.autoplay = true;
+    video_obj.muted = true; // Default to mute the video
+    return video_obj;
+}
+
+var upper_group = document.querySelector("#upper_group");
+
+var localVideo = create_video_obj("localVideo");
+var remoteVideo = create_video_obj("remoteVideo");
+
+
+var host_remotes = document.querySelector("#is_host");
+var client_remote = document.querySelector("#is_client");
+client_remote.hidden = true;
+host_remotes.hidden = true;
+
+
+/////////////////////////////////////////////////
+
 // var room = 'test';
 var room = prompt('Enter room name:');
 var room_name = document.querySelector('#room_name');
 room_name.innerHTML = room;
 
 // User role
-var user_role = prompt("Join as host or user?");
-var user_display_role = document.querySelector('user_role');
+var user_role = prompt("Join as host or client?");
+var user_display_role = document.querySelector('#user_role');
 user_display_role.innerHTML = user_role;
+
+
+var is_host = (user_role.toLowerCase() === "host");
+if (is_host){
+    host_remotes.hidden = false;
+    upper_group.appendChild(localVideo);
+} else {
+    client_remote.hidden = false;
+    upper_group.appendChild(remoteVideo);
+    client_remote.appendChild(localVideo)
+}
+
+
 
 
 var socket = io.connect();
@@ -67,7 +107,9 @@ socket.on('created', function(room) {
 });
 
 socket.on('full', function(room) {
-  console.log('Room ' + room + ' is full');
+    console.log('Room ' + room + ' is full');
+    alert("Room is full!");
+
 });
 
 socket.on('join', function (room){
@@ -117,9 +159,6 @@ socket.on('message', function(message) {
 });
 
 ////////////////////////////////////////////////////
-
-var localVideo = document.querySelector('#localVideo');
-var remoteVideo = document.querySelector('#remoteVideo');
 
 navigator.mediaDevices.getUserMedia({
   audio: true,
@@ -256,6 +295,8 @@ function requestTurn(turnURL) {
   }
 }
 
+
+// TODO: Add function to determine whether it's host or client
 function handleRemoteStreamAdded(event) {
   console.log('Remote stream added.');
   console.log(event)
