@@ -5,8 +5,7 @@ A WebRTC project demo
 ## Installation Guide
 
 ### For SimpleDemo
-1. Download Chrome plugin, Web Server for Chrome.
-`https://chrome.google.com/webstore/detail/web-server-for-chrome/ofhbbkphhbklhfoeikjpcbhemlocgigb?hl=en`
+1. Download Chrome plugin, [Web Server for Chrome](https://chrome.google.com/webstore/detail/web-server-for-chrome/ofhbbkphhbklhfoeikjpcbhemlocgigb?hl=en)
 2. Run app, choose /SimpleDemo folder.
 3. Under Options, check the box of "Automatically show index.html"
 4. Web urls are showing below.
