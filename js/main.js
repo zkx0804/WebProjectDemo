@@ -1,8 +1,8 @@
 'use strict';
 
-// 1. Understand code better
-// 2. Modified stream
-// 3. Dynamically crarete video elements based streams.
+// TODO: improve CPU performance ***
+// TODO: stable
+// TODO: Add function to properly close the video window
 
 if (!Array.prototype.last) {
     Array.prototype.last = function () {
@@ -360,7 +360,3 @@ function handleRemoteHangup() {
 function stop() {
     isStarted = false;
     for (var p in pcs) {
-        p.close();
-    }
-    pcs = [];
-}
