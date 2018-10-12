@@ -6,3 +6,20 @@ video {
   max-width: 100%;
   width: 320px;
 }
+
+
+ol.horizontal{
+  list-style-type: decimal;
+  width: 100%;
+}
+
+ol.horizontal li{
+  float: left;
+  display: inline;
+  width: 200px;
+  padding: 2px;
+}
+
+#remote_videos {
+  width: 100%;
+}

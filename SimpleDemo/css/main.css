@@ -17,3 +17,19 @@ video {
     width: 320px;
     height: 240px;
 }
+
+ol.horizontal{
+    list-style-type: decimal;
+    width: 100%;
+}
+
+ol.horizontal li{
+    float: left;
+    display: inline;
+    width: 200px;
+    padding: 2px;
+}
+
+.lower-area {
+    width: 100%;
+}

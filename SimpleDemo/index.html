@@ -22,13 +22,15 @@
   </div>
   <div>
       <p>Remote feed:</p>
-      <button id="callButton">Call</button>
-      <button id="addStream">Add Stream</button>
-      <button id="hangupButton">Hang Up</button>
+      <button id="callButton">Add Remote Stream</button>
+      <button id="hangupButton">Hang Up All</button>
   </div>
-  <div id="remoteGroup">
-      <video id="remoteVideo" autoplay playsinline></video>
+  <div class="lower-area">
+      <ol class="horizontal" id="remoteGroup">
+
+      </ol>
   </div>
+  <video id="remoteVideo" autoplay playsinline></video>
   <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
   <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
   <script src="js/main.js"></script>
