@@ -29,6 +29,7 @@ io.sockets.on('connection', function (socket) {
         socket.broadcast.emit('message', message);
     });
 
+
     socket.on('create or join', function (room) {
         console.log('Received request to create or join room ' + room);
 
@@ -59,6 +60,15 @@ io.sockets.on('connection', function (socket) {
         }
     });
 
+    socket.on('get rooms list', function () {
+        console.log("List rooms");
+        var rooms = io.sockets.adapter.rooms;
+        console.log(rooms);
+
+        socket.emit('got room list', rooms);
+
+    })
+
     socket.on('ipaddr', function () {
         var ifaces = os.networkInterfaces();
         for (var dev in ifaces) {
@@ -75,3 +85,7 @@ io.sockets.on('connection', function (socket) {
     });
 
 });
+
+
+var testVar = "String from index.js";
+module.exports.testVar = testVar;

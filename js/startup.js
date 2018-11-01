@@ -1,17 +1,65 @@
 'use strict';
-
-// TODO: Refactor code
-// TODO: Add more functions
-// TODO: Improve overall user experience.
+///////////////////////////////////////
+// helper function                ////
+/////////////////////////////////////
 
 if (!Array.prototype.last) {
     Array.prototype.last = function () {
         return this[this.length - 1];
     };
 }
-;
+
+function create_video_obj(video_id) {
+    var video_obj = document.createElement('video');
+    video_obj.id = video_id;
+    video_obj.autoplay = true;
+    video_obj.muted = true; // Default to mute the video
+    return video_obj;
+}
+
+function create_remote_client(video_obj) {
+    var item = document.createElement('div');
+    item.className = "col-md-4"
+    var heading = document.createElement('h2');
+    heading.innerText = "Client:";
+    var btn = document.createElement('button');
+    btn.className = 'btn btn-secondary';
+    btn.href = '#';
+    btn.role = 'button';
+    btn.innerText = "Hang up"
+
+    item.appendChild(heading);
+    item.appendChild(video_obj)
+    item.appendChild(btn);
+
+    return item;
+}
 
 
+///////////////////////////////////////
+// HTML Selectors                 ////
+/////////////////////////////////////
+
+// Form
+var room_selectors = document.querySelector('#room_selections');
+
+// obj
+var start_msg = document.querySelector('#starting');
+var main_container = document.querySelector('#main-container');
+var room_obj = document.querySelector('#room_name');
+var user_display_role = document.querySelector('#user_role');
+
+// Video
+var upper_group = document.querySelector("#upper_group");
+var remoteGroup = document.querySelector('#lower_group');
+var client_remote = document.querySelector("#is_client");
+
+///////////////////////////////////////
+// Initialize Variables           ////
+/////////////////////////////////////
+var socket = io.connect();
+
+// Video constraints
 const constraints = {
     audio: false,
     video: {
@@ -20,15 +68,6 @@ const constraints = {
         frameRate: {ideal: 10, max: 40}
     }
 };
-
-
-var isChannelReady = false;
-var isInitiator = false;
-var isStarted = false;      // Video session hasn't started
-var streamStarted = false;  // whether Room already started with one client
-var localStream;
-var pcs = [];
-
 
 var default_server = {
     'urls': 'stun:stun.l.google.com:19302'
@@ -58,60 +97,96 @@ var sdpConstraints = {
     offerToReceiveVideo: true
 };
 
-/////////////////////////////////////////////
 
-function create_video_obj(video_id) {
-    var video_obj = document.createElement('video');
-    video_obj.id = video_id;
-    video_obj.autoplay = true;
-    video_obj.muted = true; // Default to mute the video
-    return video_obj;
-}
-
-var upper_group = document.querySelector("#upper_group");
+var isChannelReady = false;
+var isInitiator = false;
+var isStarted = false;      // Video session hasn't started
+var is_host = false;
+// var streamStarted = false;  // whether Room already started with one client
+var localStream;
+var pcs = [];
+var room;
 
 var localVideo = create_video_obj("localVideo");
 var remoteVideo = create_video_obj("remoteVideo");
 
-var remoteGroup = document.querySelector('#remoteGroup');
-var host_remotes = document.querySelector("#is_host");
-var client_remote = document.querySelector("#is_client");
-client_remote.hidden = true;
-host_remotes.hidden = true;
+
+// Add room selections
+socket.emit('get rooms list');
+
+socket.on('got room list', function (rooms) {
+    console.log('Receive room list');
+    console.log(rooms);
+
+    Object.keys(rooms).forEach(function (key) {
+        console.log(key, rooms[key]);
+        var opt = document.createElement('option');
+        opt.innerText = key;
+        room_selectors.appendChild(opt);
+    });
+});
 
 
 ///////////////////////////////////////
-// User join room                 ////
+// start actions                   ////
 /////////////////////////////////////
 
-// var room = 'test';
-var room = prompt('Enter room name:');
-var room_name = document.querySelector('#room_name');
-room_name.innerHTML = room;
+function create_room() {
+    var room_name = document.getElementById("roomNameInput").value;
+    // var user_name = document.getElementById("userNameInput").value;
+    // var host_pw = document.getElementById("pwNameInput").value;
+    room = room_name;
+    room_obj.innerText = room;
+    user_display_role.innerHTML = 'Host';
 
-// User role
-var user_role = prompt("Join as host or client?");
-var user_display_role = document.querySelector('#user_role');
-user_display_role.innerHTML = user_role;
+    console.log("host started meeting in: " + room_name)
 
-
-var is_host = (user_role.toLowerCase() === "host");
-if (is_host) {
-    host_remotes.hidden = false;
-    upper_group.appendChild(localVideo);
-} else {
-    client_remote.hidden = false;
-    upper_group.appendChild(remoteVideo);
-    client_remote.appendChild(localVideo)
-}
-
-
-var socket = io.connect();
-
-if (room !== '') {
     socket.emit('create or join', room);
-    console.log('Attempted to create or  join room', room);
+    is_host = true;
+    main(room_name);
+    start_msg.hidden = true;
+    main_container.hidden = false;
+    client_remote.hidden = true;
+};
+
+
+function join_room() {
+    var room_name = document.getElementById("room_selections").value;
+    var user_name = document.getElementById("user_NameInput").value;
+    var user_pw = document.getElementById("pw_NameInput").value;
+    room = room_name;
+    room_obj.innerText = room;
+    user_display_role.innerHTML = 'Client';
+
+
+    console.log("Client join: " + room_name);
+    socket.emit('create or join', room);
+    is_host = false;
+    main()
+    start_msg.hidden = true;
+    main_container.hidden = false;
 }
+
+function main() {
+    console.log("Start as host: " + is_host);
+
+    if (is_host) {
+        upper_group.appendChild(localVideo);
+    } else {
+        upper_group.appendChild(remoteVideo);
+        client_remote.appendChild(localVideo)
+    }
+
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(gotStream)
+        .catch(function (e) {
+            alert('getUserMedia() error: ' + e.name);
+        });
+}
+
+///////////////////////////////////////
+// socket actions                 ////
+/////////////////////////////////////
 
 socket.on('created', function (room) {
     console.log('Created room ' + room);
@@ -144,14 +219,6 @@ socket.on('log', function (array) {
     console.log.apply(console, array);
 });
 
-////////////////////////////////////////////////
-
-function sendMessage(message) {
-    console.log('Client sending message: ', message);
-    socket.emit('message', message);
-}
-
-// This client receives a message
 socket.on('message', function (message) {
     console.log('Client received message:', message);
     if (message === 'got user media') {
@@ -175,13 +242,15 @@ socket.on('message', function (message) {
     }
 });
 
-////////////////////////////////////////////////////
 
-navigator.mediaDevices.getUserMedia(constraints)
-    .then(gotStream)
-    .catch(function (e) {
-        alert('getUserMedia() error: ' + e.name);
-    });
+///////////////////////////////////////
+//webrtc handlers                 ////
+/////////////////////////////////////
+function sendMessage(message) {
+    console.log('Client sending message: ', message);
+    socket.emit('message', message);
+}
+
 
 function gotStream(stream) {
     console.log('Adding local stream.');
@@ -307,8 +376,6 @@ function requestTurn(turnURL) {
     }
 }
 
-
-// TODO: Add function to determine whether it's host or client
 function handleRemoteStreamAdded(event) {
     if (is_host) {
         console.log(event.streams)
@@ -316,7 +383,9 @@ function handleRemoteStreamAdded(event) {
         var remote_video = document.getElementById(remoteS.id); // Seems having issue with chrome, chrome has {}
         if (!remote_video) {
             remote_video = create_video_obj(remoteS.id);
-            remoteGroup.appendChild(remote_video);
+            var remote_obj = create_remote_client(remote_video);
+
+            remoteGroup.appendChild(remote_obj);
         }
         if (!remote_video.srcObject || remote_video.srcObject.id !== remoteS.id) {
             remote_video.srcObject = remoteS;
@@ -337,6 +406,8 @@ function handleRemoteStreamRemoved(event) {
     console.log('Remote stream removed. Event: ', event);
 }
 
+
+// TODO: Add handler for hangup actions for both host and clients
 function hangup() {
     console.log('Hanging up.');
     stop();
@@ -351,7 +422,29 @@ function handleRemoteHangup() {
 
 function stop() {
     isStarted = false;
-    for (var p in pcs) {
-        p.close();
-    }
+    // for (var p in pcs) {
+    //     p.close();
+    // }
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
