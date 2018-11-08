@@ -24,3 +24,4 @@ MANIFEST
 .idea/
 node_modules/
 package-lock.json
+resources/
