@@ -4,16 +4,39 @@ var max_clients = 3;
 
 
 var os = require('os');
+var fs = require('fs');
+var express = require('express');
+var https = require('https');
 var nodeStatic = require('node-static');
-var http = require('http');
-var socketIO = require('socket.io');
-
 var fileServer = new (nodeStatic.Server)();
-var app = http.createServer(function (req, res) {
-    fileServer.serve(req, res);
-}).listen(8080);
 
-var io = socketIO.listen(app);
+var app = express();
+app.use(express.static(process.env.SERVE_DIRECTORY || 'dist'));
+app.get('/', function(req, res) {
+    return fileServer.serve(req, res);
+});
+
+
+const httpsPort = 1234;
+var options = {
+    key: fs.readFileSync('./resources/key.pem', 'utf8'),
+    cert: fs.readFileSync('./resources/server.crt', 'utf8'),
+    passphrase: process.env.HTTPS_PASSPHRASE || ''
+};
+
+// console.log(options)
+
+var server  = https.createServer(options, app).listen(httpsPort);
+// var http = require('http');
+
+var socketIO = require('socket.io');
+//
+// var fileServer = new (nodeStatic.Server)();
+// var app = http.createServer(function (req, res) {
+//     fileServer.serve(req, res);
+// }).listen(8080);
+
+var io = socketIO.listen(server);
 io.sockets.on('connection', function (socket) {
 
     // convenience function to log server messages on the client
