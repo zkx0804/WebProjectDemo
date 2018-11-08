@@ -74,7 +74,7 @@
     <!--<p>&copy; 2018</p>-->
 <!--</footer>-->
 <!-- Pop when starting up -->
-<div class="modal" id="myModal">
+<div class="modal" id="startModal">
     <div class="modal-dialog">
         <div class="modal-content">
 
@@ -150,7 +150,8 @@
     </div>
 </div>
 <script type="text/javascript">
-    $('#myModal').modal('show');
+    // $('#myModal').modal('show');
+    $('#startModal').modal({backdrop: 'static', keyboard: false});
 </script>
 
 

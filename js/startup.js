@@ -1,4 +1,6 @@
 'use strict';
+// change to HTTPS
+// host can broadcast one of the client's video
 ///////////////////////////////////////
 // helper function                ////
 /////////////////////////////////////
@@ -63,9 +65,9 @@ var socket = io.connect();
 const constraints = {
     audio: false,
     video: {
-        width: {ideal: 320, max: 640},
-        height: {ideal: 180, max: 480},
-        frameRate: {ideal: 10, max: 40}
+        width: {ideal: 320, max: 1920},
+        height: {ideal: 180, max: 1080},
+        frameRate: {ideal: 10, max: 60}
     }
 };
 
@@ -106,7 +108,7 @@ var is_host = false;
 var localStream;
 var pcs = [];
 var room;
-
+var client_id = '';
 var localVideo = create_video_obj("localVideo");
 var remoteVideo = create_video_obj("remoteVideo");
 
@@ -177,6 +179,7 @@ function main() {
         client_remote.appendChild(localVideo)
     }
 
+    //Start video stream
     navigator.mediaDevices.getUserMedia(constraints)
         .then(gotStream)
         .catch(function (e) {
@@ -188,9 +191,10 @@ function main() {
 // socket actions                 ////
 /////////////////////////////////////
 
-socket.on('created', function (room) {
-    console.log('Created room ' + room);
+socket.on('created', function (room, clientId) {
+    console.log('Client[' + clientId + '] Created room ' + room);
     isInitiator = true;
+    client_id = clientId;
 });
 
 socket.on('full', function (room) {
@@ -199,14 +203,16 @@ socket.on('full', function (room) {
 
 });
 
-socket.on('join', function (room) {
-    console.log('Another peer made a request to join room ' + room);
+socket.on('join', function (room, clientId) {
+    console.log('Another peer [' + clientId + ']made a request to join room ' + room);
     isChannelReady = true;
 });
 
-socket.on('joined', function (room) {
-    console.log('joined: ' + room);
+socket.on('joined', function (room, clientId) {
+    console.log('Client[' + clientId + '] joined: ' + room);
     isChannelReady = true;
+    client_id = clientId;
+
 });
 
 socket.on('streamStarted', function (value) {

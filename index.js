@@ -44,7 +44,7 @@ io.sockets.on('connection', function (socket) {
 
         } else if (numClients < max_clients) {
             console.log('Client ID ' + socket.id + ' joined room ' + room);
-            io.sockets.in(room).emit('join', room);
+            io.sockets.in(room).emit('join', room, socket.id);
             socket.join(room);
             socket.emit('joined', room, socket.id);
             io.sockets.in(room).emit('ready');
@@ -61,13 +61,16 @@ io.sockets.on('connection', function (socket) {
     });
 
     socket.on('get rooms list', function () {
-        console.log("List rooms");
         var rooms = io.sockets.adapter.rooms;
-        console.log(rooms);
 
         socket.emit('got room list', rooms);
 
     })
+
+    socket.on('leave', function(){
+
+    })
+
 
     socket.on('ipaddr', function () {
         var ifaces = os.networkInterfaces();
