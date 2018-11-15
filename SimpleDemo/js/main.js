@@ -12,6 +12,8 @@ const offerOptions = {
   offerToReceiveVideo: 1,
 };
 
+
+
 // Define initial start time of the call (defined as connection between peers).
 let startTime = null;
 

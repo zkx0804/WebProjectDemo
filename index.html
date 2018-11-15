@@ -1,44 +1,164 @@
 <!DOCTYPE html>
 <html>
+<meta charset="UTF-8">
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/js/bootstrap.min.js"></script>
+<script src="/socket.io/socket.io.js"></script>
+
+<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.3/css/bootstrap.min.css">
+<link rel="stylesheet" href="/css/main.css"/>
+<link rel="stylesheet" href="css/startup.css"/>
 
 <head>
-
-    <title>Live video Chat</title>
-
-    <link rel="stylesheet" href="/css/main.css"/>
-
+    <title>WebRTC Meeting Demo</title>
 </head>
 
 <body>
+<nav class="navbar navbar-expand-md navbar-dark fixed-top bg-dark">
+    <a class="navbar-brand" href="#">Meeting Demo</a>
+    <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarsExampleDefault"
+            aria-controls="navbarsExampleDefault" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+    </button>
 
-<h1>Live Meeting - 1 host with multiple clients</h1>
-
-<h3>In room: <span id="room_name"></span></h3>
-<h3>Joined as: <span id="user_role"></span></h3>
-
-<div id="upper_group">
-    <h2>Host:</h2>
-    <!--<video id="localVideo" autoplay muted playsinline></video>-->
-</div>
-
-<div id="lower_group">
-    <div id="is_client">
-        <h2>Self:</h2>
-        <!--<video id="remoteVideo" autoplay playsinline></video>-->
+    <div class="collapse navbar-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+            <li class="nav-item active">
+                <a class="nav-link" href="#">Home <span class="sr-only">(current)</span></a>
+            </li>
+        </ul>
     </div>
-    <div id="is_host">
-        <h2>Clients</h2>
-        <ol class="horizontal" id="remoteGroup">
+</nav>
 
-        </ol>
+<main role="main">
+    <div id="app-failed" class="jumbotron" hidden>
+        <div class="container">
+            <h1 class="display-3">Error! Unable to start app.</h1>
+        </div>
+    </div>
+    <div id="starting" class="jumbotron">
+        <div class="container">
+            <h1 class="display-3">Starting app...</h1>
+        </div>
+    </div>
+
+
+    <!-- Main jumbotron to display host video -->
+    <!-- Toggle to display after submit form-->
+    <div class="container" id="main-container" hidden>
+
+        <div class="jumbotron">
+            <h1 class="display-4">Live Meeting - 1 host with multiple clients</h1>
+            <h3 class="display-5">In room: <span id="room_name"></span></h3>
+            <h3 class="display-6">Joined as: <span id="user_role"></span></h3>
+
+            <p>The jumbotron will display host video.</p>
+
+            <div id="upper_group"></div>
+        </div>
+
+
+        <!-- Video groups -->
+        <div class="row" id="lower_group">
+            <div class="col-md-4" id="is_client">
+                <h2>Self:</h2>
+                <p>This is the video of client himself</p>
+            </div>
+        </div>
+        <hr>
+    </div>
+</main>
+
+<!--<footer>-->
+    <!--<p>&copy; 2018</p>-->
+<!--</footer>-->
+<!-- Pop when starting up -->
+<div class="modal" id="myModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <!-- Modal Header -->
+            <div class="modal-header">
+                <h4 class="modal-title">WebRTC Meeting App Demo</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <!-- Modal body -->
+            <div class="modal-body">
+                <nav>
+                    <div class="nav nav-tabs">
+                        <a class="nav-item nav-link active" href="#create" data-toggle="tab" role="tab"
+                           aria-selected="true">Create a new room</a>
+                        <a class="nav-item nav-link" href="#join" data-toggle="tab" role="tab" aria-selected="false">Join
+                            an existing room</a>
+                        <!--<div class="nav-item"><a href="#join" data-toggle="tab">Join an existing room</a></div>-->
+                    </div>
+                </nav>
+                <div id="createOrJoinTabContent" class="tab-content">
+                    <div class="tab-pane active in" id="create">
+                        <form class="form-signin" id="create-form">
+                            <label for="roomNameInput" class="sr-only">Enter room name (Optional):</label>
+                            <input type="text" id="roomNameInput" class="form-control"
+                                   placeholder="Enter room name(Required)"
+                                   autocomplete="off"
+                                   required
+                                   autofocus>
+                            <br>
+                            <label for="userNameInput" class="sr-only">Enter user name (Optional):</label>
+                            <input type="text" id="userNameInput" class="form-control" placeholder="Enter user name">
+                            <br>
+                            <label for="pwNameInput" class="sr-only">Enter password (Optional):</label>
+                            <input type="text" id="pwNameInput" class="form-control"
+                                   autocomplete="off"
+                                   placeholder="Enter a password for room.">
+                            <br>
+
+                            <button class="btn btn-lg btn-primary btn-block" onclick="create_room()" data-dismiss="modal">Create
+                            </button>
+                        </form>
+                    </div>
+
+                    <div class="tab-pane fade" id="join">
+                        <form class="form-signin" id="join-form">
+                            <label>Please select a room in the list</label>
+                            <select class="form-control" id="room_selections" required>
+                            </select>
+                            <br>
+                            <input type="text" id="user_NameInput" class="form-control" placeholder="Enter user name">
+                            <br>
+                            <input type="text" id="pw_NameInput" class="form-control"
+                                   placeholder="Enter a password for room."
+                                   autocomplete="off"
+                            >
+                            <br>
+                            <button class="btn btn-lg btn-primary btn-block" onclick="join_room()" data-dismiss="modal" >Join
+                            </button>
+                        </form>
+                    </div>
+
+                </div>
+
+            </div>
+
+            <!-- Modal footer -->
+            <div class="modal-footer">
+                <button type="button" class="btn btn-danger" data-dismiss="modal">Close</button>
+            </div>
+
+        </div>
     </div>
 </div>
+<script type="text/javascript">
+    $('#myModal').modal('show');
+</script>
 
 
 <!-- This file is automatically added/served when running "node index.js". -->
 <script src="/socket.io/socket.io.js"></script>
 <script src="https://webrtc.github.io/adapter/adapter-latest.js"></script>
-<script src="js/main.js"></script>
+<script src="js/startup.js"></script>
+
 
 </body>
 
