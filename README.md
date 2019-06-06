@@ -1,4 +1,4 @@
-# WebProjectDemo
+# WebRTC Meeting App 
 For Independent Study  
 A WebRTC project demo
 
